@@ -2,20 +2,24 @@ import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import CustomersAPI from "../services/customersAPI";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import TableLoader from "../components/loaders/TableLoader";
 
 const CustomersPage = (props) => {
 
     const [customers, setCustomers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
 
     //Permet d'aller récupérer les customers
     const fetchCustomers = async () => {
         try{
             const data = await CustomersAPI.findAll()
             setCustomers(data);
+            setLoading(false);
         }catch(error){
-            console.log(error.response)
+            toast.error("Impossible de charger les clients!");
         }
     }
 
@@ -33,8 +37,10 @@ const CustomersPage = (props) => {
 
         try {
             await CustomersAPI.delete(id)
+            toast.success("Le client a bien été supprimé!");
         }catch(error){
             setCustomers(originalCustomers);
+            toast.error("La suppression du client n'a pas pu fonctionner");
         }
     };
 
@@ -84,11 +90,11 @@ const CustomersPage = (props) => {
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                {!loading && <tbody>
                     {paginatedCustomers.map(customer => 
                     <tr key={customer.id}>
                         <td>{customer.id}</td>
-                        <td><a href="#">{customer.firstname} {customer.lastName}</a></td>
+                        <td><Link to={"/customers/" + customer.id}>{customer.firstname} {customer.lastName}</Link></td>
                         <td>{customer.email}</td>
                         <td>{customer.company}</td>
                         <td className="text-center">
@@ -105,8 +111,9 @@ const CustomersPage = (props) => {
                             </button>
                         </td>
                     </tr>)} 
-                </tbody>
+                </tbody>}
             </table>
+            {loading && <TableLoader />}
 
             {itemsPerPage < filteredCustomers.length && (
                 <Pagination 

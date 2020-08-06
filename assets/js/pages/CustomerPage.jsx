@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Field from '../components/forms/Field';
 import { Link } from 'react-router-dom';
 import CustomersAPI from "../services/customersAPI";
+import { toast } from 'react-toastify';
+import FormContentLoader from '../components/loaders/FormContentLoader';
 
 const CustomerPage = ({ match, history }) => {
 
@@ -21,16 +23,18 @@ const CustomerPage = ({ match, history }) => {
         company: ""
     });
 
+    const [loading, setLoading] = useState(false);
+
     const [editing, setEditing] = useState(false);
 
     //Récupération du customer en fonction de l'identifiant
     const fetchCustomer = async id => {
        try {
         const { firstname, lastName, email, company } = await CustomersAPI.find(id);
-
         setCustomer({ firstname, lastName, email, company });
+        setLoading(false);
         } catch(error) {
-            //TODO : Notification flash d'une erreur
+            toast.error("Le client n'a pas pu être chargé!");
             history.replace("/customers");
         }
     }
@@ -38,6 +42,7 @@ const CustomerPage = ({ match, history }) => {
     //Chargement du customer si besoin au chargement du composant ou au changement de l'identifiant
     useEffect(() =>{
         if(id !== "new") {
+            setLoading(true);
             setEditing(true);
             fetchCustomer(id);   
         }
@@ -54,16 +59,17 @@ const CustomerPage = ({ match, history }) => {
         event.preventDefault();
 
         try{
-
+            setErrors({});
+            
             if(editing){
                 await CustomersAPI.update(id, customer);
-                // TODO : Flash notification de succès
+                toast.success("Le cleint a bie été modifié!");
             }else{
                 await CustomersAPI.create(customer);
-                // TODO : Flash notification de succès
+                toast.success("Le cleint a bie été enregistré!");
                 history.replace("/customers");
             }
-            setErrors({});
+           
         }catch({ response }){
             const { violations } = response.data;
             if(violations){
@@ -73,7 +79,7 @@ const CustomerPage = ({ match, history }) => {
                 });
 
                 setErrors(apiErrors);
-                // TODO : Flash notification d'erreur
+                toast.error("Des erreurs sont survenues dans votre formulaire!");
             }
         }
     };
@@ -82,7 +88,9 @@ const CustomerPage = ({ match, history }) => {
         <>
             {!editing && <h1>Création d'un client</h1> || <h1>Modification du client</h1>}
 
-            <form onSubmit={handleSubmit}>
+            {loading && <FormContentLoader />}
+
+            {!loading && <form onSubmit={handleSubmit}>
                 <Field name="lastName" label="Nom de famille" placeholder="Nom de famille du client" value={customer.lastName} 
                     onChange={handleChange} error={errors.lastName} />
                 <Field name="firstname" label="Prénom" placeholder="Prénom du client" value={customer.firstname} 
@@ -96,7 +104,7 @@ const CustomerPage = ({ match, history }) => {
                     <button type="submit" className="btn btn-success">Enregistrer</button>
                     <Link to="/customers" className="btn btn-link">Retour à la liste</Link>
                 </div>
-            </form>
+            </form>}
         </>
      );
 }
