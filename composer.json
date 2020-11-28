@@ -1,4 +1,6 @@
 {
+    "name": "vendor-name/api-course",
+    "description": "",
     "type": "project",
     "license": "proprietary",
     "require": {
