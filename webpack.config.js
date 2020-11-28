@@ -71,6 +71,7 @@ Encore
     .enableReactPreset()
     //.addEntry('admin', './assets/js/admin.js')
 
+    //Permet de donner des options à la configuration de WebPack
     Encore.configureDefinePlugin(options => {
         options["process.env"].APi_URL = process.env.APi_URL;
     });
