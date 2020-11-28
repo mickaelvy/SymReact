@@ -73,7 +73,7 @@ Encore
 
     //Permet de donner des options à la configuration de WebPack
     Encore.configureDefinePlugin(options => {
-        options["process.env"].APi_URL = process.env.APi_URL;
+        options['process.env'].API_URL = JSON.stringify(process.env.API_URL)
     });
 
 module.exports = Encore.getWebpackConfig();
